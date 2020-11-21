@@ -2,7 +2,8 @@ const ContactsRepository = require('../repositories/ContactsRepository');
 
 class ContactController {
   async index(request, response) {
-    const contacts = await ContactsRepository.findAll();
+    const { orderBy } = request.query;
+    const contacts = await ContactsRepository.findAll(orderBy);
 
     response.json(contacts);
   }
@@ -44,7 +45,7 @@ class ContactController {
     } = request.body;
 
     const contactExists = await ContactsRepository.findById(id);
-    if (contactExists) {
+    if (!contactExists) {
       return response.status(404).json({ error: 'User not found' });
     }
 
@@ -60,15 +61,11 @@ class ContactController {
     await ContactsRepository.update(id, {
       name, email, phone, category_id,
     });
-    response.sendStatus(201);
+    response.sendStatus(200);
   }
 
   async delete(request, response) {
     const { id } = request.params;
-    const contact = await ContactsRepository.findById(id);
-    if (!contact) {
-      return response.status(404).json({ error: 'User not found' });
-    }
 
     await ContactsRepository.delete(id);
     response.sendStatus(204);
